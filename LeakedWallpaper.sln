@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34009.444
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LeakedWallpaper", "LeakedWallpaper\LeakedWallpaper.vcxproj", "{9DB46576-27CA-4A18-9866-6CD6051C2955}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9DB46576-27CA-4A18-9866-6CD6051C2955}.Debug|x64.ActiveCfg = Debug|x64
+		{9DB46576-27CA-4A18-9866-6CD6051C2955}.Debug|x64.Build.0 = Debug|x64
+		{9DB46576-27CA-4A18-9866-6CD6051C2955}.Debug|x86.ActiveCfg = Debug|Win32
+		{9DB46576-27CA-4A18-9866-6CD6051C2955}.Debug|x86.Build.0 = Debug|Win32
+		{9DB46576-27CA-4A18-9866-6CD6051C2955}.Release|x64.ActiveCfg = Release|x64
+		{9DB46576-27CA-4A18-9866-6CD6051C2955}.Release|x64.Build.0 = Release|x64
+		{9DB46576-27CA-4A18-9866-6CD6051C2955}.Release|x86.ActiveCfg = Release|Win32
+		{9DB46576-27CA-4A18-9866-6CD6051C2955}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B68EFBDD-1E21-48DB-A436-AEFC7F66109E}
+	EndGlobalSection
+EndGlobal
